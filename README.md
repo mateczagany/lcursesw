@@ -1,14 +1,12 @@
-lcurses
-=======
+lcursesw
+========
 
-By the [lcurses project][GitHub]
+this is a fork of [lcurses project][Lcurses] which remove complex build system,
+and add wide char support, it current only support for Lua 5.3.
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
-[![travis-ci status](https://secure.travis-ci.org/lcurses/lcurses.png?branche=master)](http://travis-ci.org/lcurses/lcurses/builds)
-[![Stories in Ready](https://badge.waffle.io/lcurses/lcurses.png?label=ready&title=Ready)](https://waffle.io/lcurses/lcurses)
 
-
-lcurses is a curses binding for [Lua] 5.1, 5.2 and 5.3 (including LuaJIT).
+lcurses is a curses binding for [Lua] ~~5.1, 5.2 and~~ 5.3 ~~(including LuaJIT)~~.
 
 lcurses is released under the MIT license, like Lua (see [COPYING];
 it's basically the same as the BSD license). There is no warranty.
@@ -61,7 +59,8 @@ bear in mind the following points when writing new code:
 
 
 [Lua]: http://www.lua.org/
-[GitHub]: https://github.com/lcurses/lcurses
+[GitHub]: https://github.com/DavidFeng/lcursesw
+[Lcurses]: https://github.com/lcurses/lcurses
 [LuaRocks]: http://www.luarocks.org "Lua package manager"
 [LDoc]: https://github.com/stevedonovan/LDoc "Lua documentation generator"
 [COPYING]: https://raw.github.com/lcurses/lcurses/release/COPYING
