@@ -80,12 +80,11 @@
 */
 
 
-#include <config.h>
+#define PACKAGE "lcurses"
+#define VERSION "9.0.0"
+#define PACKAGE_STRING "lcurses 9.0.0"
 
 #include "_helpers.c"
-#include "strlcpy.c"
-
-#if HAVE_CURSES
 
 #include "curses/chstr.c"
 #include "curses/window.c"
@@ -1191,6 +1190,36 @@ Pnewpad(lua_State *L)
 
 static char ti_capname[32];
 
+/*
+ * Copy src to string dst of size siz.  At most siz-1 characters
+ * will be copied.  Always NUL terminates (unless siz == 0).
+ * Returns strlen(src); if retval >= siz, truncation occurred.
+ */
+static size_t strlcpy_(char *dst, const char *src, size_t siz)
+{
+        register char *d = dst;
+        register const char *s = src;
+        register size_t n = siz;
+
+        /* Copy as many bytes as will fit */
+        if (n != 0 && --n != 0) {
+                do {
+                        if ((*d++ = *s++) == 0)
+                                break;
+                } while (--n != 0);
+        }
+
+        /* Not enough room in dst, add NUL and traverse rest of src */
+        if (n == 0) {
+                if (siz != 0)
+                        *d = '\0';		/* NUL-terminate dst */
+                while (*s++)
+                        ;
+        }
+
+        return(s - src - 1);	/* count does not include NUL */
+}
+
 /***
 Fetch terminfo boolean capability.
 @function tigetflag
@@ -1204,7 +1233,7 @@ Ptigetflag (lua_State *L)
 {
 	int r;
 
-	strlcpy (ti_capname, luaL_checkstring (L, 1), sizeof (ti_capname));
+	strlcpy_ (ti_capname, luaL_checkstring (L, 1), sizeof (ti_capname));
 	r = tigetflag (ti_capname);
 	if (-1 == r)
 		return luaL_error (L, "`%s' is not a boolean capability", ti_capname);
@@ -1225,7 +1254,7 @@ Ptigetnum (lua_State *L)
 {
 	int res;
 
-	strlcpy (ti_capname, luaL_checkstring (L, 1), sizeof (ti_capname));
+	strlcpy_ (ti_capname, luaL_checkstring (L, 1), sizeof (ti_capname));
 	res = tigetnum (ti_capname);
 	if (-2 == res)
 		return luaL_error (L, "`%s' is not a numeric capability", ti_capname);
@@ -1250,7 +1279,7 @@ Ptigetstr (lua_State *L)
 {
 	const char *res;
 
-	strlcpy (ti_capname, luaL_checkstring (L, 1), sizeof (ti_capname));
+	strlcpy_ (ti_capname, luaL_checkstring (L, 1), sizeof (ti_capname));
 	res = tigetstr (ti_capname);
 	if ((char *) -1 == res)
 		return luaL_error (L, "`%s' is not a string capability", ti_capname);
@@ -1260,12 +1289,10 @@ Ptigetstr (lua_State *L)
 		lua_pushstring(L, res);
 	return 1;
 }
-#endif
 
 
 static const luaL_Reg curseslib[] =
 {
-#if HAVE_CURSES
 	LCURSES_FUNC( Pbaudrate		),
 	LCURSES_FUNC( Pbeep		),
 	LCURSES_FUNC( Pcbreak		),
@@ -1321,7 +1348,6 @@ static const luaL_Reg curseslib[] =
 	LCURSES_FUNC( Punctrl		),
 	LCURSES_FUNC( Pungetch		),
 	LCURSES_FUNC( Puse_default_colors),
-#endif
 	{NULL, NULL}
 };
 
@@ -1559,12 +1585,10 @@ luaopen_curses_c(lua_State *L)
 	lua_pushliteral(L, "lcurses for " LUA_VERSION " / " PACKAGE_STRING);
 	lua_setfield(L, -2, "version");
 
-#if HAVE_CURSES
 	lua_pushstring(L, "initscr");
 	lua_pushvalue(L, -2);
 	lua_pushcclosure(L, Pinitscr, 1);
 	lua_settable(L, -3);
-#endif
 
 	return 1;
 }

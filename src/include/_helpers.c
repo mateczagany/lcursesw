@@ -13,7 +13,6 @@
 #ifndef LCURSES__HELPERS_C
 #define LCURSES__HELPERS_C 1
 
-#include <config.h>
 
 #include <errno.h>
 #include <grp.h>
@@ -23,24 +22,9 @@
 #include <sys/stat.h>
 #include <unistd.h>		/* for _POSIX_VERSION */
 
-#if HAVE_NCURSESW_CURSES_H
-#  include <ncursesw/curses.h>
-#elif HAVE_NCURSESW_H
-#  include <ncursesw.h>
-#elif HAVE_NCURSES_CURSES_H
-#  include <ncurses/curses.h>
-#elif HAVE_NCURSES_H
-#  include <ncurses.h>
-#elif HAVE_CURSES_H
-#  include <curses.h>
-#endif
+#include <ncursesw/curses.h>
 #include <term.h>
 
-/* NetBSD's default curses implementation is not quite complete.  This
-   disables those missing functions unless linked to ncurses instead. */
-#if defined NCURSES_VERSION || !defined __NetBSD__
-#  define LCURSES_POSIX_COMPLIANT 1
-#endif
 
 #include "lua.h"
 #include "lualib.h"
@@ -48,15 +32,9 @@
 
 #if LUA_VERSION_NUM < 503
 #  define lua_isinteger lua_isnumber
-#  if LUA_VERSION_NUM == 501
-#    include "compat-5.2.c"
-#  endif
 #endif
 
 #if LUA_VERSION_NUM == 502 || LUA_VERSION_NUM == 503
-#  define lua_objlen lua_rawlen
-#  define lua_strlen lua_rawlen
-#  define luaL_openlib(L,n,l,nup) luaL_setfuncs((L),(l),(nup))
 #  define luaL_register(L,n,l) (luaL_newlib(L,l))
 #endif
 
