@@ -20,13 +20,17 @@ CFLAGS += $(INC)
 
 LIB = -lncursesw
 
-.PHONY : clean all
+.PHONY : clean all doc
 
 all : curses_c.so
 
 curses_c.so : $(SRC)
 	$(CC) -shared -o $@ $(CFLAGS) $< $(LIB)
 
+doc : doc/index.html
+
+doc/index.html : $(SRC)
+	ldoc .
 
 clean :
 	rm -f curses_c.so
