@@ -1,3 +1,5 @@
+/* */
+
 /***
 Curses attributed string buffers.
 

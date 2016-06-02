@@ -1,0 +1,41 @@
+-- -*- lua -*-
+title = "lcurses 9.0.0 Reference"
+project = "lcurses 9.0.0"
+description = "POSIX bindings for Lua (including curses)"
+
+tparam_alias "string"
+tparam_alias "int"
+tparam_alias "bool"
+
+-- Manual page links point to the OpenGroup POSIX spec, issue 7 (POSIX.2008).
+local upat = "http://pubs.opengroup.org/onlinepubs/9699919799/functions/%s.html"
+custom_see_handler("^([%w_]+)%((%d)%)$",function(name,section)
+    local url = upat:format(name)
+    return name .. "(" .. section .. ")", url
+end)
+
+-- Curses manual pages use a different URL scheme.
+local cpat = "http://pubs.opengroup.org/onlinepubs/007908799/xcurses/%s.html"
+custom_see_handler("^([%w_]+)%((3x)%)$",function(name,section)
+    local url = cpat:format(name)
+    return name .. "(" .. section .. ")", url
+end)
+
+dir = "doc"
+file = {
+  -- Classes
+  "src/curses/chstr.c",
+  "src/curses/window.c",
+
+  -- Modules
+  "src/curses.c",
+}
+examples = "examples"
+
+boilerplate = true
+backtick_references = false
+format = "markdown"
+merge = true
+sort = true
+
+-- vim: ft=lua
