@@ -22,6 +22,7 @@
 #include <sys/stat.h>
 #include <unistd.h>		/* for _POSIX_VERSION */
 
+#define _XOPEN_SOURCE_EXTENDED
 #include <ncursesw/curses.h>
 #include <term.h>
 
@@ -132,6 +133,23 @@ static long
 checklong(lua_State *L, int narg)
 {
 	return (long)checkinteger(L, narg, "int");
+}
+
+static cchar_t
+checkcchar(lua_State *L, int narg)
+{
+  cchar_t r = {.attr = A_NORMAL};
+  if (lua_isnumber(L, narg)) {
+    // unicode code point
+    r.chars[0] = checkint(L, narg);
+  }
+  if (lua_isstring(L, narg)) {
+    // check first utf8 code point
+    r.chars[0] = *lua_tostring(L, narg);
+  } else {
+    argtypeerror(L, narg, "int or char");
+  }
+  return r;
 }
 
 
@@ -353,37 +371,5 @@ binding_notimplemented(lua_State *L, const char *fname, const char *libname)
 	return 2;
 }
 
-
-#define pushintegerfield(k,v) LCURSES_STMT_BEG {			\
-	lua_pushinteger(L, (lua_Integer) v); lua_setfield(L, -2, k);	\
-} LCURSES_STMT_END
-
-#define pushnumberfield(k,v) LCURSES_STMT_BEG {				\
-	lua_pushnumber(L, (lua_Number) v); lua_setfield(L, -2, k);	\
-} LCURSES_STMT_END
-
-#define pushstringfield(k,v) LCURSES_STMT_BEG {				\
-	if (v) {							\
-		lua_pushstring(L, (const char *) v);			\
-		lua_setfield(L, -2, k);					\
-	}								\
-} LCURSES_STMT_END
-
-#define pushliteralfield(k,v) LCURSES_STMT_BEG {			\
-	if (v) {							\
-		lua_pushliteral(L, v);					\
-		lua_setfield(L, -2, k);					\
-	}								\
-} LCURSES_STMT_END
-
-#define settypemetatable(t) LCURSES_STMT_BEG {				\
-	if (luaL_newmetatable(L, t) == 1)				\
-		pushliteralfield("_type", t);				\
-	lua_setmetatable(L, -2);					\
-} LCURSES_STMT_END
-
-#define setintegerfield(_p, _n) pushintegerfield(LCURSES_STR(_n), _p->_n)
-#define setnumberfield(_p, _n) pushnumberfield(LCURSES_STR(_n), _p->_n)
-#define setstringfield(_p, _n) pushstringfield(LCURSES_STR(_n), _p->_n)
 
 #endif /*LCURSES__HELPERS_C*/

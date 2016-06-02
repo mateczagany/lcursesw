@@ -1,3 +1,5 @@
+os.setlocale("", 'all')
+
 local curses = require "curses"
 
 
@@ -10,8 +12,9 @@ local function main ()
   local stdscr = curses.initscr ()
 
   curses.cbreak ()
-  curses.echo (false)	-- not noecho !
-  curses.nl (false)	-- not nonl !
+  curses.echo (false)	-- not noecho
+  curses.nl (false)	-- not nonl
+  curses.curs_set(0)	-- not cursor
 
   stdscr:clear ()
 
@@ -21,11 +24,23 @@ local function main ()
   end
 
   stdscr:mvaddstr (15, 20, "print 你好世界out curses constants (y/n) ? ")
+
+  local s1 = "hello world"
+  local chs1 = curses.new_chstr(#s1)
+  chs1:set_str(0, s1, curses.A_BOLD)
+
+  stdscr:mvaddchstr (0, 0, chs1)
+
+  local s2 = 'hi你好世界!'
+  local chs2 = curses.new_chstr(#s2)
+  chs2:set_str(0, s2)
+
+  stdscr:mvaddchstr (1, 0, chs2)
+
   stdscr:refresh ()
 
   local c = stdscr:getch ()
   if c < 256 then c = string.char (c) end
-
   curses.endwin ()
 
   if c == "y" then
