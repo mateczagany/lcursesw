@@ -111,10 +111,8 @@ Pnew_chstr(lua_State *L) {
     return luaL_error(L, "create wstr failed!");
   }
 
-  chstr ** p = lua_newuserdata(L, sizeof(chstr *));
-  *p = ncs;
-  luaL_getmetatable(L, CHSTR_META);
-  lua_setmetatable(L, -2);
+  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = ncs;
+  luaL_setmetatable(L, CHSTR_META);
 
 	return 1;
 }

@@ -105,8 +105,7 @@ chstr_new(lua_State *L, int len)
 		return luaL_error(L, "invalid chstr length"), NULL;
 
 	cs = lua_newuserdata(L, CHSTR_SIZE(len));
-	luaL_getmetatable(L, CHSTR_META);
-	lua_setmetatable(L, -2);
+	luaL_setmetatable(L, CHSTR_META);
 	cs->len = len;
 	return cs;
 }
@@ -258,16 +257,23 @@ Cdup(lua_State *L)
   *ncs = malloc(CHWSTR_SIZE(rlen));
   if (!*ncs)
     luaL_error(L, "malloc failed for chstr:dup");
-
   memcpy(*ncs, *cs, CHWSTR_SIZE(rlen));
-
   (*ncs)->size = rlen;
 
-  luaL_getmetatable(L, CHSTR_META);
-  lua_setmetatable(L, -2);
+  luaL_setmetatable(L, CHSTR_META);
   return 1;
 }
 
+/***
+free chstr
+@function __gc
+@chstr self
+*/
+static int
+Cchstr_gc(lua_State *L) {
+  delete_chwstr(*checkchstr(L, 1));
+  return 0;
+}
 
 /***
 Initialise a new chstr.
@@ -318,6 +324,10 @@ luaopen_curses_chstr(lua_State *L)
 
 	lua_pushvalue(L, mt);
 	lua_setfield(L, -2, "__index");		/* mt.__index = mt */
+
+  lua_pushcfunction(L, Cchstr_gc);
+	lua_setfield(L, -2, "__gc");		/* mt.__gc = Cchstr_gc*/
+
 	lua_pushliteral(L, "CursesChstr");
 	lua_setfield(L, -2, "_type");		/* mt._type = "CursesChstr" */
 

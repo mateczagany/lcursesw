@@ -43,13 +43,23 @@ local function main ()
 end
 
 
--- [[
-xpcall(main, function (err)
-  curses.endwin ()
+local switch = false
 
-  print "Caught an error:"
-  print(debug.traceback (err, 2))
-  os.exit(2)
-end)
---]]
---print(inspect(curses))
+if switch then
+  xpcall(main, function (err)
+    curses.endwin ()
+
+    print "Caught an error:"
+    print(debug.traceback (err, 2))
+    os.exit(2)
+  end)
+else
+  local chs1 = curses.new_chstr("hello world", curses.A_BOLD)
+  local chs1 = curses.new_chstr("hello world", curses.A_BOLD)
+  print(inspect(chstr))
+  local mt = debug.getregistry()['curses:chstr']
+  print(inspect(mt))
+  print(inspect(mt.__gc))
+  print(inspect(mt._type))
+
+end
