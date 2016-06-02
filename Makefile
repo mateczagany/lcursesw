@@ -3,26 +3,30 @@
 # $< first dep
 # $^ all dep
 
-SRC = curses.c include/_helpers.c curses/chstr.c curses/window.c
+SRC = src/curses.c src/include/_helpers.c src/curses/chstr.c src/curses/window.c
 
-INC = -Iinclude
+INC = -Isrc -Isrc/include
 
 ifdef LUAPATH
 	INC += -I$(LUAPATH)
 endif
 
-CFLAGS = -std=c99 -Wall -fPIC
+CC = gcc
+
+CFLAGS = -std=c99 -fPIC
+CFLAGS += -Wextra
+#CFLAGS += -Wall
 CFLAGS += $(INC)
 
 LIB = -lncursesw
-CC = gcc
+
+.PHONY : clean all
 
 all : curses_c.so
 
 curses_c.so : $(SRC)
 	$(CC) -shared -o $@ $(CFLAGS) $< $(LIB)
 
-.PHONY: clean all
 
 clean :
 	rm -f curses_c.so

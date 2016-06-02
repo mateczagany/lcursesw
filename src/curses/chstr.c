@@ -82,14 +82,14 @@ Cset_str(lua_State *L)
 	const char *str = luaL_checklstring(L, 3, &len);
 	int attr = optint(L, 4, A_NORMAL);
 	int rep = optint(L, 5, 1);
-	int i;
+	unsigned int i;
 
 	if (offset < 0)
 		return 0;
 
-	while (rep-- > 0 && offset <= (int)cs->len)
+	while (rep-- > 0 && (unsigned int)offset <= cs->len)
 	{
-		if (offset + len - 1 > (int)cs->len)
+		if (offset + len - 1 > cs->len)
 			len = cs->len - offset + 1;
 
 		for (i = 0; i < len; ++i)
