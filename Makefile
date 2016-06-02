@@ -1,5 +1,4 @@
 
-
 # $< first dep
 # $^ all dep
 
@@ -20,9 +19,15 @@ CFLAGS += $(INC)
 
 LIB = -lncursesw
 
-.PHONY : clean all doc
+.PHONY : clean all doc test
 
 all : curses_c.so
+
+test : curses_c.so inspect.lua
+	lua53 test.lua
+
+inspect.lua :
+	wget https://raw.githubusercontent.com/kikito/inspect.lua/master/inspect.lua
 
 curses_c.so : $(SRC)
 	$(CC) -shared -o $@ $(CFLAGS) $< $(LIB)

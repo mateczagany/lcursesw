@@ -5,5 +5,4 @@
 
 /doc
 
-/build
-/test
+/inspect.lua

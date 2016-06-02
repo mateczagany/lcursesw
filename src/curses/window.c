@@ -792,12 +792,12 @@ Waddchstr(lua_State *L)
 {
 	WINDOW *w = checkwin(L, 1);
 	int n = optint(L, 3, -1);
-	chstr *cs = checkchstr(L, 2);
+	chstr *cs = *checkchstr(L, 2);
 
 	if (n < 0 || n > (int) cs->len)
 		n = cs->len;
 
-	return pushokresult(waddchnstr(w, cs->str, n));
+	return pushokresult(wadd_wchnstr(w, cs->str, n));
 }
 
 
@@ -817,12 +817,12 @@ Wmvaddchstr(lua_State *L)
 	int y = checkint(L, 2);
 	int x = checkint(L, 3);
 	int n = optint(L, 5, -1);
-	chstr *cs = checkchstr(L, 4);
+	chstr *cs = *checkchstr(L, 4);
 
 	if (n < 0 || n > (int) cs->len)
 		n = cs->len;
 
-	return pushokresult(mvwaddchnstr(w, y, x, cs->str, n));
+	return pushokresult(mvwadd_wchnstr(w, y, x, cs->str, n));
 }
 
 
@@ -1411,12 +1411,16 @@ Wwinchnstr(lua_State *L)
 {
 	WINDOW *w = checkwin(L, 1);
 	int n = checkint(L, 2);
-	chstr *cs = chstr_new(L, n);
+	//chstr *cs = *chwstr_new(L, n);
+  //TODO
 
-	if (winchnstr(w, cs->str, n) == ERR)
+	return 0;
+#if 0
+	if (win_wchnstr(w, cs->str, n) == ERR)
 		return 0;
 
 	return 1;
+#endif
 }
 
 
@@ -1436,12 +1440,16 @@ Wmvwinchnstr(lua_State *L)
 	int y = checkint(L, 2);
 	int x = checkint(L, 3);
 	int n = checkint(L, 4);
-	chstr *cs = chstr_new(L, n);
 
-	if (mvwinchnstr(w, y, x, cs->str, n) == ERR)
+#if 0
+	chstr *cs = *chstr_new(L, n);
+	if (mvwin_wchnstr(w, y, x, cs->str, n) == ERR)
 		return 0;
 
 	return 1;
+#else
+	return 0; // TODO
+#endif
 }
 
 
@@ -1887,7 +1895,7 @@ luaopen_curses_window(lua_State *L)
 {
 	int t, mt;
 
-	luaL_register(L, "curses.window", curses_window_fns);
+	luaL_newlib(L, curses_window_fns);
 	t = lua_gettop(L);
 
 	luaL_newmetatable(L, WINDOWMETA);

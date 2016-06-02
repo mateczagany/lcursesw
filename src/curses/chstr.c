@@ -19,15 +19,80 @@ and attributes in `chstr` buffers are not defined until **after**
 #include "_helpers.c"
 
 
-static const char *CHSTRMETA = "curses:chstr";
+static const char *CHSTR_META = "curses:chstr";
 
 
+#if 0
 typedef struct
 {
 	unsigned int len;
 	chtype str[1];
 } chstr;
 #define CHSTR_SIZE(len) (sizeof(chstr) + len * sizeof(chtype))
+
+#else
+#define chstr chwstr
+#define CHSTR_SIZE CHWSTR_SIZE
+#endif
+
+
+typedef struct
+{
+	unsigned int len; // element num
+  unsigned int size; // buffer size
+	cchar_t str[1];
+} chwstr;
+#define CHWSTR_SIZE(len) (sizeof(chwstr) + len * sizeof(cchar_t))
+
+
+static chwstr *
+chwstr_new(const char * str, size_t len, int attr) {
+  if (!str || len < 1) return NULL;
+
+  chwstr * cs = malloc(CHWSTR_SIZE(len));
+  if (!cs) return NULL;
+
+  cs->size = len;
+
+  int i = 0;
+
+  for (const char * str_end = str + len; str < str_end;) {
+    int code;
+    str = utf8_decode(str, &code);
+
+    if (str == NULL) return free(cs), NULL; // 参数不是有效的utf8序列
+
+    cs->str[i].attr       = attr;
+    cs->str[i].chars[1]   = '\0';
+    cs->str[i++].chars[0] = code;
+  }
+
+  cs->len = i;
+
+  return cs;
+}
+
+static void
+delete_chwstr(chwstr * cs) {
+  free(cs);
+}
+
+static void test() {
+  const char * s = "hello world, 你好世界!";
+
+#if 0
+  chwstr * cs = chwstr_new(s, strlen(s), 2);
+  if (cs) {
+    printf("len is %d\n", cs->len);
+    for (size_t i = 0; i < cs->len; i++) {
+      int c = cs->str[i].chars[0];
+      printf("%d : %lc %d \n", i, c, c);
+    }
+    delete_chwstr(cs);
+  }
+#endif
+
+}
 
 
 /* create new chstr object and leave it in the lua stack */
@@ -40,7 +105,7 @@ chstr_new(lua_State *L, int len)
 		return luaL_error(L, "invalid chstr length"), NULL;
 
 	cs = lua_newuserdata(L, CHSTR_SIZE(len));
-	luaL_getmetatable(L, CHSTRMETA);
+	luaL_getmetatable(L, CHSTR_META);
 	lua_setmetatable(L, -2);
 	cs->len = len;
 	return cs;
@@ -48,17 +113,14 @@ chstr_new(lua_State *L, int len)
 
 
 /* get chstr from lua (convert if needed) */
-static chstr *
+static chstr **
 checkchstr(lua_State *L, int narg)
 {
-	chstr *cs = (chstr*)luaL_checkudata(L, narg, CHSTRMETA);
-	if (cs)
-		return cs;
+  chstr **cs = (chstr**)luaL_checkudata(L, narg, CHSTR_META);
+  if (!cs)
+    luaL_argerror(L, narg, "bad curses chstr");
 
-	luaL_argerror(L, narg, "bad curses chstr");
-
-	/*NOTREACHED*/
-	return NULL;
+  return cs;
 }
 
 
@@ -76,27 +138,8 @@ Change the contents of the chstr.
 static int
 Cset_str(lua_State *L)
 {
-	chstr *cs = checkchstr(L, 1);
-	int offset = checkint(L, 2);
-	size_t len;
-	const char *str = luaL_checklstring(L, 3, &len);
-	int attr = optint(L, 4, A_NORMAL);
-	int rep = optint(L, 5, 1);
-	unsigned int i;
-
-	if (offset < 0)
-		return 0;
-
-	while (rep-- > 0 && (unsigned int)offset <= cs->len)
-	{
-		if (offset + len - 1 > cs->len)
-			len = cs->len - offset + 1;
-
-		for (i = 0; i < len; ++i)
-			cs->str[offset + i] = str[i] | attr;
-		offset += len;
-	}
-
+	chstr *cs = *checkchstr(L, 1);
+  // TODO
 	return 0;
 }
 
@@ -119,21 +162,13 @@ Set a character in the buffer.
 static int
 Cset_ch(lua_State *L)
 {
-	chstr* cs = checkchstr(L, 1);
+	chstr* cs = *checkchstr(L, 1);
 	int offset = checkint(L, 2);
-	chtype ch = checkch(L, 3);
+	chtype ch = checkch(L, 3); // codepoint
 	int attr = optint(L, 4, A_NORMAL);
 	int rep = optint(L, 5, 1);
+  // TODO
 
-	while (rep-- > 0)
-	{
-		if (offset < 0 || offset >= (int) cs->len)
-			return 0;
-
-		cs->str[offset] = ch | attr;
-
-		++offset;
-	}
 	return 0;
 }
 
@@ -154,18 +189,18 @@ Get information from the chstr.
 static int
 Cget(lua_State *L)
 {
-	chstr* cs = checkchstr(L, 1);
+	chstr* cs = *checkchstr(L, 1);
 	int offset = checkint(L, 2);
 	chtype ch;
 
 	if (offset < 0 || offset >= (int) cs->len)
 		return 0;
 
-	ch = cs->str[offset];
+  // TODO
 
-	lua_pushinteger(L, ch & A_CHARTEXT);
-	lua_pushinteger(L, ch & A_ATTRIBUTES);
-	lua_pushinteger(L, ch & A_COLOR);
+	lua_pushinteger(L, 0);
+	lua_pushinteger(L, 0);
+	lua_pushinteger(L, 0);
 	return 3;
 }
 
@@ -176,15 +211,32 @@ Retrieve chstr length.
 @tparam chstr cs buffer to act on
 @treturn int length of *cs*
 @usage
-  cs = curses.chstr (123)
-  --> 123
+  cs = curses.chstr ('hi,世界')
+  --> 5
   print (cs:len ())
 */
 static int
 Clen(lua_State *L)
 {
-	chstr *cs = checkchstr(L, 1);
+	chstr *cs = *checkchstr(L, 1);
 	return pushintresult(cs->len);
+}
+
+/***
+Retrieve chstr size.
+@function size
+@tparam chstr cs buffer to act on
+@treturn int size of *cs*
+@usage
+  cs = curses.chstr ('hi,世界')
+  --> 9
+  print (cs:len ())
+*/
+static int
+Csize(lua_State *L)
+{
+	chstr *cs = *checkchstr(L, 1);
+	return pushintresult(cs->size);
 }
 
 
@@ -198,11 +250,22 @@ Duplicate chstr.
 static int
 Cdup(lua_State *L)
 {
-	chstr *cs = checkchstr(L, 1);
-	chstr *ncs = chstr_new(L, cs->len);
+  chstr **cs = checkchstr(L, 1);
+  chstr ** ncs = lua_newuserdata(L, sizeof(chstr *));
 
-	memcpy(ncs->str, cs->str, CHSTR_SIZE(cs->len));
-	return 1;
+  size_t rlen = (*cs)->len;
+
+  *ncs = malloc(CHWSTR_SIZE(rlen));
+  if (!*ncs)
+    luaL_error(L, "malloc failed for chstr:dup");
+
+  memcpy(*ncs, *cs, CHWSTR_SIZE(rlen));
+
+  (*ncs)->size = rlen;
+
+  luaL_getmetatable(L, CHSTR_META);
+  lua_setmetatable(L, -2);
+  return 1;
 }
 
 
@@ -227,6 +290,7 @@ C__call(lua_State *L)
 static const luaL_Reg curses_chstr_fns[] =
 {
 	LCURSES_FUNC( Clen		),
+	LCURSES_FUNC( Csize		),
 	LCURSES_FUNC( Cset_ch		),
 	LCURSES_FUNC( Cset_str		),
 	LCURSES_FUNC( Cget		),
@@ -241,7 +305,7 @@ luaopen_curses_chstr(lua_State *L)
 {
 	int t, mt;
 
-	luaL_register(L, "curses.chstr", curses_chstr_fns);
+	luaL_newlib(L, curses_chstr_fns);
 	t = lua_gettop(L);
 
 	lua_createtable(L, 0, 1);		/* u = {} */
@@ -249,7 +313,7 @@ luaopen_curses_chstr(lua_State *L)
 	lua_setfield(L, -2, "__call");		/* u.__call = C__call */
 	lua_setmetatable(L, -2);		/* setmetatable (t, u) */
 
-	luaL_newmetatable(L, CHSTRMETA);
+	luaL_newmetatable(L, CHSTR_META);
 	mt = lua_gettop(L);
 
 	lua_pushvalue(L, mt);

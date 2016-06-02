@@ -96,16 +96,26 @@ static const char *RIPOFF_TABLE		= "curses:ripoffline";
 /***
 Create a new line drawing buffer instance.
 @function new_chstr
-@int len number of element to allocate
+@string str utf8 string to create
+@int[opt] attr attrbitue
 @treturn chstr a new char buffer object
 @see curses.chstr
 */
 static int
-Pnew_chstr(lua_State *L)
-{
-	int len = checkint(L, 1);
-	chstr* ncs = chstr_new(L, len);  /* defined in curses/chstr.c */
-	memset(ncs->str, ' ', len*sizeof(chtype));
+Pnew_chstr(lua_State *L) {
+  size_t len;
+  const char * str = luaL_checklstring(L, 1, &len);
+  int attr = optint(L, 2, A_NORMAL);
+  chstr* ncs = chwstr_new(str, len, attr);
+  if (!ncs) {
+    return luaL_error(L, "create wstr failed!");
+  }
+
+  chstr ** p = lua_newuserdata(L, sizeof(chstr *));
+  *p = ncs;
+  luaL_getmetatable(L, CHSTR_META);
+  lua_setmetatable(L, -2);
+
 	return 1;
 }
 
@@ -1578,16 +1588,24 @@ after @{curses.initscr} has returned successfully.
 LUALIB_API int
 luaopen_curses_c(lua_State *L)
 {
-	luaopen_curses_window(L);
-	luaopen_curses_chstr(L);
+  test();
 
-	luaL_register(L, "curses", curseslib);
+	luaL_newlib(L, curseslib);
+
+	luaL_requiref(L, "curses.chstr", luaopen_curses_chstr, 0);
+	lua_setfield(L, -2, "chstr");
+
+	luaL_requiref(L, "curses.window", luaopen_curses_window, 0);
+	lua_setfield(L, -2, "window");
+
 	lua_pushliteral(L, "lcurses for " LUA_VERSION " / " PACKAGE_STRING);
 	lua_setfield(L, -2, "version");
 
 	lua_pushstring(L, "initscr");
+
 	lua_pushvalue(L, -2);
 	lua_pushcclosure(L, Pinitscr, 1);
+
 	lua_settable(L, -3);
 
 	return 1;
