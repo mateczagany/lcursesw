@@ -64,7 +64,7 @@ local function main ()
 
   stdscr:mvaddstr (8, 0, cs3:len() .. ' ' .. cs3:size())
 
-  cs3:set_str(5, '好', curses.A_BLINK, 8)
+  cs3:set_str(5, '好', curses.A_BLINK, 15)
   cs3:set_ch(2, 'e', curses.A_BLINK, 1)
 
   stdscr:mvaddchstr (9, 0, cs3)

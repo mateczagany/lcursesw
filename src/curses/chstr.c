@@ -116,7 +116,6 @@ Cset_str(lua_State *L) {
   int *code_array = malloc(sizeof(int) * len);
   if (!code_array) return luaL_error(L, "malloc failed");
 
-
   int utf8_str_len = 0;
   for (const char * str_end = str + len; str < str_end; utf8_str_len++) {
     str = utf8_decode(str, code_array++);
@@ -125,7 +124,11 @@ Cset_str(lua_State *L) {
       return luaL_argerror(L, 3, "bad utf8 byte sequence");
     }
   }
-  luaL_argcheck(L, utf8_str_len > 0, 3, "empty string");
+
+  if (utf8_str_len < 1) {
+    free(code_array);
+    return luaL_argerror(L, 3, "empty string");
+  }
 
   code_array -= utf8_str_len;
 
@@ -137,15 +140,8 @@ Cset_str(lua_State *L) {
       free(code_array);
       return luaL_error(L, "realloc failed");
     }
-
-    for (unsigned int i = new_cs->size; i < new_size; i++) {
-      new_cs->str[i].attr = attr;
-      new_cs->str[i].chars[0] = ' ';
-      new_cs->str[i].chars[1] = '\0';
-    }
     new_cs->size = new_size;
-
-    *pcs = new_cs;
+    *pcs = new_cs; // update userdata
   }
 
   chstr * cs = *pcs;
