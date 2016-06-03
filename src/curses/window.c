@@ -1408,18 +1408,19 @@ Fetch attributed characters from cursor position up to rightmost window position
 static int
 Wwinchnstr(lua_State *L)
 {
-	WINDOW *w = checkwin(L, 1);
-	int n = checkint(L, 2);
-	//chstr *cs = *chwstr_new(L, n);
-  //TODO
+  WINDOW *w = checkwin(L, 1);
+  int n = checkint(L, 2);
 
-	return 0;
-#if 0
-	if (win_wchnstr(w, cs->str, n) == ERR)
-		return 0;
+  chstr *cs = chstr_new_by_size(n);
+  if (!cs) return luaL_argerror(L, 2, "must > 0");
 
-	return 1;
-#endif
+  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = cs;
+  luaL_setmetatable(L, CHSTR_META);
+
+  if (win_wchnstr(w, cs->str, n) == ERR)
+    return 0;
+
+  return 1;
 }
 
 
@@ -1435,20 +1436,21 @@ Call @{move} then @{winchnstr}.
 static int
 Wmvwinchnstr(lua_State *L)
 {
-	WINDOW *w = checkwin(L, 1);
-	int y = checkint(L, 2);
-	int x = checkint(L, 3);
-	int n = checkint(L, 4);
+  WINDOW *w = checkwin(L, 1);
+  int y = checkint(L, 2);
+  int x = checkint(L, 3);
+  int n = checkint(L, 4);
 
-#if 0
-	chstr *cs = *chstr_new(L, n);
-	if (mvwin_wchnstr(w, y, x, cs->str, n) == ERR)
-		return 0;
+  chstr *cs = chstr_new_by_size(n);
+  if (!cs) return luaL_argerror(L, 4, "must > 0");
 
-	return 1;
-#else
-	return 0; // TODO
-#endif
+  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = cs;
+  luaL_setmetatable(L, CHSTR_META);
+
+  if (mvwin_wchnstr(w, y, x, cs->str, n) == ERR)
+    return 0;
+
+  return 1;
 }
 
 

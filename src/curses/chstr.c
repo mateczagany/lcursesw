@@ -31,6 +31,21 @@ typedef struct chstr {
 
 
 static chstr *
+chstr_new_by_size(size_t len) {
+  if (len < 1) return NULL;
+  chstr * cs = malloc(CHSTR_SIZE(len));
+  if (!cs) return NULL;
+  cs->size = len;
+  cs->len = len;
+  for (unsigned int i = 0; i < len; i++) {
+    cs->str[i].attr = A_NORMAL;
+    cs->str[i].chars[0] = ' ';
+    cs->str[i].chars[1] = '\0';
+  }
+  return cs;
+}
+
+static chstr *
 chstr_new(const char * str, size_t len, int attr) {
   if (!str || len < 1) return NULL;
 
@@ -84,11 +99,73 @@ Change the contents of the chstr.
   cs:set_str(0, "0123456789", curses.A_BOLD)
 */
 static int
-Cset_str(lua_State *L)
-{
-	chstr *cs = *checkchstr(L, 1);
-  // TODO 实现设置n的构造函数，和setstr setch
-	return 0;
+Cset_str(lua_State *L) {
+  chstr **pcs = checkchstr(L, 1);
+
+  int offset = checkint(L, 2);
+  luaL_argcheck(L, 0 < offset && offset <= (int)(*pcs)->len, 2, "bad index");
+
+  --offset;
+
+  size_t len;
+  const char *str = luaL_checklstring(L, 3, &len);
+  int attr = optint(L, 4, A_NORMAL);
+  int rep = optint(L, 5, 1);
+  luaL_argcheck(L, rep > 0, 5, "rep should > 0");
+
+  int *code_array = malloc(sizeof(int) * len);
+  if (!code_array) return luaL_error(L, "malloc failed");
+
+
+  int utf8_str_len = 0;
+  for (const char * str_end = str + len; str < str_end; utf8_str_len++) {
+    str = utf8_decode(str, code_array++);
+    if (str == NULL) {
+      free(code_array);
+      return luaL_argerror(L, 3, "bad utf8 byte sequence");
+    }
+  }
+  luaL_argcheck(L, utf8_str_len > 0, 3, "empty string");
+
+  code_array -= utf8_str_len;
+
+  size_t new_size = utf8_str_len * rep + offset;
+
+  if (new_size > (*pcs)->size) {
+    chstr *new_cs = realloc(*pcs, CHSTR_SIZE(new_size));
+    if (!new_cs) {
+      free(code_array);
+      return luaL_error(L, "realloc failed");
+    }
+
+    for (unsigned int i = new_cs->size; i < new_size; i++) {
+      new_cs->str[i].attr = attr;
+      new_cs->str[i].chars[0] = ' ';
+      new_cs->str[i].chars[1] = '\0';
+    }
+    new_cs->size = new_size;
+
+    *pcs = new_cs;
+  }
+
+  chstr * cs = *pcs;
+
+  if (new_size > cs->len) {
+    cs->len = new_size;
+  }
+
+  cchar_t * p = &cs->str[offset];
+  for (int i = 0; i < rep; i++) {
+    for (int li = 0; li < utf8_str_len; li++) {
+      p->attr     = attr;
+      p->chars[0] = code_array[li];
+      p->chars[1] = '\0';
+      ++p;
+    }
+  }
+  free(code_array);
+
+  return 0;
 }
 
 
@@ -234,6 +311,32 @@ Cchstr_gc(lua_State *L) {
   return 0;
 }
 
+static int
+create_chstr(lua_State *L, int narg) {
+  chstr* cs;
+
+  int tt = lua_type(L, narg);
+  if (tt == LUA_TSTRING) {
+    size_t len;
+    const char * str = luaL_checklstring(L, narg, &len);
+    int attr = optint(L, narg + 1, A_NORMAL);
+    cs = chstr_new(str, len, attr);
+  } else if (tt == LUA_TNUMBER) {
+    int len = checkint(L, narg);
+    luaL_argcheck(L, len > 0, narg, "bad len");
+    cs = chstr_new_by_size(len);
+  } else {
+    return luaL_error(L, "bad argument");
+  }
+
+  if (!cs) return luaL_error(L, "create wstr failed!");
+
+  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = cs;
+  luaL_setmetatable(L, CHSTR_META);
+
+  return 1;
+}
+
 /***
 Initialise a new chstr.
 @function __call
@@ -246,17 +349,7 @@ Initialise a new chstr.
 static int
 C__call(lua_State *L)
 {
-  size_t len;
-  const char * str = luaL_checklstring(L, 2, &len);
-  int attr = optint(L, 3, A_NORMAL);
-
-  chstr* cs = chstr_new(str, len, attr);
-  if (!cs) return luaL_error(L, "create wstr failed!");
-
-  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = cs;
-  luaL_setmetatable(L, CHSTR_META);
-
-  return 1;
+  return create_chstr(L, 2);
 }
 
 

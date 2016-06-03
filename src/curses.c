@@ -103,19 +103,8 @@ Create a new line drawing buffer instance.
 */
 static int
 Pnew_chstr(lua_State *L) {
-  size_t len;
-  const char * str = luaL_checklstring(L, 1, &len);
-  int attr = optint(L, 2, A_NORMAL);
-  chstr* ncs = chstr_new(str, len, attr);
-  if (!ncs) return luaL_error(L, "create wstr failed!");
-
-  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = ncs;
-  luaL_setmetatable(L, CHSTR_META);
-
-  return 1;
+  return create_chstr(L, 1);
 }
-
-
 
 #define CCR(n, v)				\
 	lua_pushstring(L, n);			\

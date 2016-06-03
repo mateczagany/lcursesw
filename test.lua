@@ -43,6 +43,33 @@ local function main ()
   local chs3 = chs2:dup()
   stdscr:mvaddchstr (2, 0, chs3)
 
+  local cs2 = chstr(5)
+  cs2:set_ch(1, 'H', curses.A_BOLD, 1)
+  cs2:set_ch(2, 'e', curses.A_BLINK, 1)
+  cs2:set_ch(3, ',')
+  cs2:set_ch(5, '!', curses.A_NORMAL)
+  --cs2:set_ch(6, '!', curses.A_NORMAL) -- error!
+  stdscr:mvaddchstr (3, 0, cs2)
+
+  local csi = stdscr:mvwinchnstr(3, 0, 3)
+  stdscr:mvaddchstr (4, 1, csi)
+
+  stdscr:move(0, 0)
+  local csi2 = stdscr:winchnstr(19)
+  csi2:set_ch(15, '!', curses.A_NORMAL)
+  stdscr:mvaddchstr (6, 0, csi2)
+
+  --local cs3 = chstr(8, curses.A_BOLD)
+  local cs3 = chstr('123中文45678', curses.A_BOLD)
+
+  stdscr:mvaddstr (8, 0, cs3:len() .. ' ' .. cs3:size())
+
+  cs3:set_str(5, '好', curses.A_BLINK, 8)
+  cs3:set_ch(2, 'e', curses.A_BLINK, 1)
+
+  stdscr:mvaddchstr (9, 0, cs3)
+  stdscr:mvaddstr (10, 0, cs3:len() .. ' ' .. cs3:size())
+
   stdscr:refresh ()
 
   stdscr:getch ()
