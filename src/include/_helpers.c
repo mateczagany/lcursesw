@@ -135,21 +135,22 @@ checklong(lua_State *L, int narg)
 	return (long)checkinteger(L, narg, "int");
 }
 
-static cchar_t
-checkcchar(lua_State *L, int narg)
+#define MAXUNICODE	0x10FFFF
+static const char *utf8_decode (const char *o, int *val);
+
+static int
+checkutf8char(lua_State *L, int narg)
 {
-  cchar_t r = {.attr = A_NORMAL};
-  if (lua_isnumber(L, narg)) {
-    // unicode code point
-    r.chars[0] = checkint(L, narg);
-  }
-  if (lua_isstring(L, narg)) {
-    // check first utf8 code point
-    r.chars[0] = *lua_tostring(L, narg);
+  int i;
+  if (lua_type(L, narg) == LUA_TNUMBER) {
+    i = checkint(L, narg);
+    luaL_argcheck(L, i <= MAXUNICODE, narg, "bad unicode codepoint");
+  } else if (lua_type(L, narg) == LUA_TSTRING) {
+    luaL_argcheck(L, utf8_decode(lua_tostring(L, narg), &i), narg, "bad utf8 byte sequence");
   } else {
-    argtypeerror(L, narg, "int or char");
+    argtypeerror(L, narg, "int or string");
   }
-  return r;
+  return i;
 }
 
 
@@ -371,7 +372,6 @@ binding_notimplemented(lua_State *L, const char *fname, const char *libname)
 	return 2;
 }
 
-#define MAXUNICODE	0x10FFFF
 
 /*
 ** Decode one UTF-8 sequence, returning NULL if byte sequence is invalid.

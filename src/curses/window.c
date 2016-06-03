@@ -23,8 +23,7 @@ lc_newwin(lua_State *L, WINDOW *nw)
 	if (nw)
 	{
 		WINDOW **w = lua_newuserdata(L, sizeof(WINDOW*));
-		luaL_getmetatable(L, WINDOWMETA);
-		lua_setmetatable(L, -2);
+		luaL_setmetatable(L, WINDOWMETA);
 		*w = nw;
 	}
 	else

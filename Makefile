@@ -1,4 +1,3 @@
-
 # $< first dep
 # $^ all dep
 
@@ -13,8 +12,9 @@ endif
 CC = gcc
 
 CFLAGS = -std=c99 -fPIC
-CFLAGS += -Wextra
-#CFLAGS += -Wall
+CFLAGS += -O2
+CFLAGS += -g
+CFLAGS += -Wextra #-Wall
 CFLAGS += $(INC)
 
 LIB = -lncursesw

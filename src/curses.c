@@ -106,13 +106,13 @@ Pnew_chstr(lua_State *L) {
   size_t len;
   const char * str = luaL_checklstring(L, 1, &len);
   int attr = optint(L, 2, A_NORMAL);
-  chstr* ncs = chwstr_new(str, len, attr);
+  chstr* ncs = chstr_new(str, len, attr);
   if (!ncs) return luaL_error(L, "create wstr failed!");
 
   *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = ncs;
   luaL_setmetatable(L, CHSTR_META);
 
-	return 1;
+  return 1;
 }
 
 
@@ -1581,6 +1581,8 @@ after @{curses.initscr} has returned successfully.
   end
 */
 
+#define VERSION_INFO "lcurses for " LUA_VERSION " / " PACKAGE_STRING " / %s"
+
 LUALIB_API int
 luaopen_curses_c(lua_State *L)
 {
@@ -1594,14 +1596,12 @@ luaopen_curses_c(lua_State *L)
 	luaL_requiref(L, "curses.window", luaopen_curses_window, 0);
 	lua_setfield(L, -2, "window");
 
-	lua_pushliteral(L, "lcurses for " LUA_VERSION " / " PACKAGE_STRING);
+	lua_pushfstring(L, VERSION_INFO, curses_version());
 	lua_setfield(L, -2, "version");
 
 	lua_pushstring(L, "initscr");
-
 	lua_pushvalue(L, -2);
 	lua_pushcclosure(L, Pinitscr, 1);
-
 	lua_settable(L, -3);
 
 	return 1;
