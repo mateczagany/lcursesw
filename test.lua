@@ -29,8 +29,7 @@ local function main ()
 
   stdscr:mvaddstr (15, 20, "hello 世界!")
 
-  local chs1 = curses.new_chstr("hello world", curses.A_BOLD)
-  stdscr:mvaddchstr (0, 0, chs1)
+  stdscr:mvaddchstr (0, 0, chstr "hello world")
 
   local chs2 = curses.new_chstr('hello 世界!', curses.A_BLINK)
   stdscr:mvaddchstr (1, 0, chs2)
@@ -43,7 +42,7 @@ local function main ()
 end
 
 
-local switch = false
+local switch = true
 
 if switch then
   xpcall(main, function (err)
@@ -56,10 +55,6 @@ if switch then
 else
   local chs1 = curses.new_chstr("hello world", curses.A_BOLD)
   local chs1 = curses.new_chstr("hello world", curses.A_BOLD)
-  print(inspect(chstr))
   local mt = debug.getregistry()['curses:chstr']
-  print(inspect(mt))
-  print(inspect(mt.__gc))
-  print(inspect(mt._type))
-
+  print(inspect({chstr, mt}))
 end

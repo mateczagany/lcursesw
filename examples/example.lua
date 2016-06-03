@@ -25,16 +25,10 @@ local function main ()
 
   stdscr:mvaddstr (15, 20, "print 你好世界out curses constants (y/n) ? ")
 
-  local s1 = "hello world"
-  local chs1 = curses.new_chstr(#s1)
-  chs1:set_str(0, s1, curses.A_BOLD)
-
+  local chs1 = curses.chstr("hello world")
   stdscr:mvaddchstr (0, 0, chs1)
 
-  local s2 = 'hi你好世界!'
-  local chs2 = curses.new_chstr(#s2)
-  chs2:set_str(0, s2)
-
+  local chs2 = curses.chstr('hi你好世界!')
   stdscr:mvaddchstr (1, 0, chs2)
 
   stdscr:refresh ()

@@ -107,9 +107,7 @@ Pnew_chstr(lua_State *L) {
   const char * str = luaL_checklstring(L, 1, &len);
   int attr = optint(L, 2, A_NORMAL);
   chstr* ncs = chwstr_new(str, len, attr);
-  if (!ncs) {
-    return luaL_error(L, "create wstr failed!");
-  }
+  if (!ncs) return luaL_error(L, "create wstr failed!");
 
   *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = ncs;
   luaL_setmetatable(L, CHSTR_META);

@@ -278,17 +278,25 @@ Cchstr_gc(lua_State *L) {
 /***
 Initialise a new chstr.
 @function __call
-@int len buffer length
-@treturn chstr a new chstr filled with spaces
+@string str utf8 string to create
+@int[opt] attr attrbitue
+@treturn chstr new chstr
 @usage
-  cs = curses.chstr (10)
+  cs = curses.chstr ('example', curses.A_BOLD)
 */
 static int
 C__call(lua_State *L)
 {
-	int len = checkint(L, 2);
-	chstr* ncs = chstr_new(L, len);
-	memset(ncs->str, ' ', len * sizeof(chtype));
+	size_t len;
+  const char * str = luaL_checklstring(L, 2, &len);
+  int attr = optint(L, 3, A_NORMAL);
+
+  chstr* cs = chwstr_new(str, len, attr);
+  if (!cs) return luaL_error(L, "create wstr failed!");
+
+  *(chstr **)lua_newuserdata(L, sizeof(chstr *)) = cs;
+  luaL_setmetatable(L, CHSTR_META);
+
 	return 1;
 }
 
