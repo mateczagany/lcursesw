@@ -20,29 +20,20 @@ github tracker.
 Installation
 ------------
 
-The simplest way to install lcurses is with [LuaRocks]. To install the
+The simplest way to install lcursesw is with [LuaRocks]. To install the
 latest release (recommended):
 
-    luarocks install lcurses
+    luarocks install lcursesw
 
 To install current git master (for testing):
 
-    luarocks install https://raw.github.com/lcurses/lcurses/release/lcurses-git-1.rockspec
+    luarocks install https://raw.github.com/DavidFeng/lcursesw/lcurses-git-1.rockspec
 
-To install without LuaRocks, check out the sources from the
+To build without LuaRocks, check out the sources from the
 [repository][GitHub] and run the following commands:
 
-    cd lcurses
-    ./bootstrap
-    ./configure --prefix=INSTALLATION-ROOT-DIRECTORY
-    make all check install
-
-Dependencies are listed in the dependencies entry of the file
-`rockspec.conf`. You will also need Autoconf and Automake.
-
-See [INSTALL] for `configure` instructions and `configure --help`
-for details of available command-line switches.
-
+    cd lcursesw
+    make test
 
 Bugs reports & patches
 ----------------------
