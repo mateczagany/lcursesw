@@ -17,69 +17,66 @@ local function printf (fmt, ...)
   return print (string.format (fmt, ...))
 end
 
+local msg = {
+  'hello, world',
+  'this is a test, 中文.',
+  'three, line text',
+  '123456789012345678901234567890',
+}
+
+local function print_list(win, list, y, x)
+  for i, v in ipairs(list) do
+    win:mvaddstr(y, x, list[i])
+    y, _ = win:getyx()
+    y = y + 1
+  end
+end
+
 local function main ()
   local stdscr = curses.initscr ()
-
-  curses.cbreak ()
   curses.echo (false)
   curses.nl (false)
   curses.curs_set(0)
+  --curses.cbreak ()
+  curses.halfdelay(10)
 
-  stdscr:clear ()
+  stdscr:keypad(true)
 
-  stdscr:mvaddstr (15, 20, "hello 世界!")
+  local msg_win = curses.newwin(10, 32, 5, 1)
+  msg_win:keypad(true)
 
-  local cs = chstr "hello world"
-  cs:set_ch(1, 'H', curses.A_BOLD, 1)
-  cs:set_ch(2, 'e', curses.A_BLINK, 1)
-  cs:set_ch(6, ',')
-  cs:set_ch(10, '中')
-  cs:set_ch(11, utf8.codepoint('文'))
-  stdscr:mvaddchstr (0, 0, cs)
 
-  local chs2 = curses.new_chstr('hello 世界!', curses.A_BLINK)
-  stdscr:mvaddchstr (1, 0, chs2)
+  while true do
 
-  local chs3 = chs2:dup()
-  stdscr:mvaddchstr (2, 0, chs3)
+    stdscr:clear ()
+    msg_win:clear ()
 
-  local cs2 = chstr(5)
-  cs2:set_ch(1, 'H', curses.A_BOLD, 1)
-  cs2:set_ch(2, 'e', curses.A_BLINK, 1)
-  cs2:set_ch(3, ',')
-  cs2:set_ch(5, '!', curses.A_NORMAL)
-  --cs2:set_ch(6, '!', curses.A_NORMAL) -- error!
-  stdscr:mvaddchstr (3, 0, cs2)
+    msg_win:box(curses.ACS_VLINE, curses.ACS_HLINE)
+    print_list(msg_win, msg, 1, 1)
 
-  local csi = stdscr:mvwinchnstr(3, 0, 3)
-  stdscr:mvaddchstr (4, 1, csi)
+    stdscr:refresh()
+    msg_win:refresh()
 
-  stdscr:move(0, 0)
-  local csi2 = stdscr:winchnstr(19)
-  csi2:set_ch(15, '!', curses.A_NORMAL)
-  stdscr:mvaddchstr (6, 0, csi2)
-
-  --local cs3 = chstr(8, curses.A_BOLD)
-  local cs3 = chstr('123中文45678', curses.A_BOLD)
-
-  stdscr:mvaddstr (8, 0, cs3:len() .. ' ' .. cs3:size())
-
-  cs3:set_str(5, '好', curses.A_BLINK, 15)
-  cs3:set_ch(2, 'e', curses.A_BLINK, 1)
-
-  stdscr:mvaddchstr (9, 0, cs3)
-  stdscr:mvaddstr (10, 0, cs3:len() .. ' ' .. cs3:size())
-
-  stdscr:refresh ()
-
-  stdscr:getch ()
+    local c = stdscr:getch ()
+    if c == nil then
+    else
+      if 0 <= c and c < 256 then
+        local ch = string.char(c):lower()
+        if ch == 'q' then
+          break
+        end
+      end
+    end
+  end
 
   curses.endwin ()
 end
 
 if not arg[1] then
   xpcall(main, function (err)
-    curses.endwin ()
+    if not curses.isendwin() then
+      curses.endwin ()
+    end
 
     print "Caught an error:"
     print(debug.traceback (err, 2))
@@ -89,15 +86,4 @@ else
   -- init curses constants
   local stdscr = curses.initscr ()
   curses.endwin ()
-
-  local s = "hello 世界"
-  local cs = chstr(s, curses.A_BOLD + curses.A_BLINK)
-  cs:set_ch(1, 'H', curses.A_BOLD, 1)
-  cs:set_ch(2, 'e', curses.A_BLINK, 1)
-  cs:set_ch(3, ',')
-  cs:set_ch(4, '4', curses.A_NORMAL)
-  for i = 1, cs:len() do
-    local cp, attr, color = cs:get(i)
-    print(i, utf8.char(cp), attr, color)
-  end
 end
