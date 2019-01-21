@@ -1,9 +1,9 @@
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
+
 lcursesw
 ========
 
 Forked from [DavidFeng/lcursesw](https://github.com/DavidFeng/lcursesw) and made it compatible with Lua5.1, Lua5.2, Lua5.3 and LuaJIT.
-
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
 
 lcurses is a curses binding for [Lua] 5.1, 5.2 and 5.3 (including LuaJIT).
 
