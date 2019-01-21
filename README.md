@@ -5,7 +5,7 @@ Forked from [DavidFeng/lcursesw](https://github.com/DavidFeng/lcursesw) and made
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
 
-lcurses is a curses binding for [Lua] ~~5.1, 5.2 and~~ 5.3 ~~(including LuaJIT)~~.
+lcurses is a curses binding for [Lua] 5.1, 5.2 and 5.3 (including LuaJIT).
 
 lcurses is released under the MIT license, like Lua (see [COPYING];
 it's basically the same as the BSD license). There is no warranty.
@@ -21,14 +21,12 @@ Installation
 
 You will need Lua headers for the Lua version you wish to build the module for in `/usr/include/$(LUAV)`.  
 You can use your package manager to download the headers easily. On Ubuntu:
-```
+	
 	apt install liblua5.1-dev
-```
 
 You will also need ncursesw library. Easy way to install:
-```
+
 	apt install libncursesw5-dev
-```
 
 Then, to build:
 
