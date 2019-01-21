@@ -38,21 +38,8 @@ Replace `lua5.1` with the Lua version you wish to use. Use `lua5.1` if you wish 
 Bugs reports & patches
 ----------------------
 
-Bug reports and patches are most welcome. Please use the github issue
-tracker (see URL at top). There is no strict coding style, but please
-bear in mind the following points when writing new code:
-
-0. Follow existing code. There are a lot of useful patterns and
-   avoided traps there.
-
-1. 8-character indentation using TABs in C sources; 2-character
-   indentation using SPACEs in Lua sources.
+Please feel free to post any issues/questions in the [GitHub issue tracker](https://github.com/czmate10/lcursesw/issues).
 
 
 [Lua]: http://www.lua.org/
-[GitHub]: https://github.com/DavidFeng/lcursesw
-[Lcurses]: https://github.com/lcurses/lcurses
-[LuaRocks]: http://www.luarocks.org "Lua package manager"
-[LDoc]: https://github.com/stevedonovan/LDoc "Lua documentation generator"
 [COPYING]: https://raw.github.com/lcurses/lcurses/release/COPYING
-[INSTALL]: https://raw.github.com/lcurses/lcurses/release/INSTALL
