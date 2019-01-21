@@ -1,8 +1,7 @@
 lcursesw
 ========
 
-this is a fork of [lcurses project][Lcurses] which remove complex build system,
-and add wide char support, it current only support for Lua 5.3.
+Forked from [DavidFeng/lcursesw](https://github.com/DavidFeng/lcursesw) and made it compatible with Lua5.1, Lua5.2, Lua5.3 and LuaJIT.
 
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://mit-license.org)
 
@@ -20,20 +19,23 @@ github tracker.
 Installation
 ------------
 
-The simplest way to install lcursesw is with [LuaRocks]. To install the
-latest release (recommended):
+You will need Lua headers for the Lua version you wish to build the module for in `/usr/include/$(LUAV)`.  
+You can use your package manager to download the headers easily. On Ubuntu:
+```
+	apt install liblua5.1-dev
+```
 
-    luarocks install lcursesw
+You will also need ncursesw library. Easy way to install:
+```
+	apt install libncursesw5-dev
+```
 
-To install current git master (for testing):
-
-    luarocks install https://raw.github.com/DavidFeng/lcursesw/lcurses-git-1.rockspec
-
-To build without LuaRocks, check out the sources from the
-[repository][GitHub] and run the following commands:
+Then, to build:
 
     cd lcursesw
-    make test
+    make test LUAV=lua5.1
+
+Replace `lua5.1` with the Lua version you wish to use. Use `lua5.1` if you wish to use the module with LuaJIT
 
 Bugs reports & patches
 ----------------------

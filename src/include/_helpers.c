@@ -26,16 +26,15 @@
 #include <ncursesw/curses.h>
 #include <term.h>
 
-
 #include "lua.h"
 #include "lualib.h"
 #include "lauxlib.h"
 
 #if LUA_VERSION_NUM < 503
-#  define lua_isinteger lua_isnumber
+#  include "compat-5.3.c"
 #endif
 
-#if LUA_VERSION_NUM == 502 || LUA_VERSION_NUM == 503
+#if LUA_VERSION_NUM == 503
 #  define luaL_register(L,n,l) (luaL_newlib(L,l))
 #endif
 
